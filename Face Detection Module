@@ -1,0 +1,24 @@
+from cvzone.FaceDetectionModule import FaceDetector
+import cv2
+
+cap = cv2.VideoCapture(0)
+detector = FaceDetector()
+
+while True:
+    success, img = cap.read()
+    img, bboxs = detector.findFaces(img)
+    print(bboxs)
+    try:
+        a = bboxs[0].get('bbox')
+        x, y, w, h = a[0], a[1], a[2], a[3]
+        bl = img[y:y + h, x:x + w]
+    except:
+        pass
+    blurred = cv2.blur(img, (13, 13))
+    blurred[y:y + h, x:x + w] = bl
+    cv2.imshow("orig", img)
+    cv2.imshow("blur", blurred)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+cap.release()
+cv2.destroyAllWindows()
