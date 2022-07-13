@@ -1,0 +1,38 @@
+import cv2
+import autopy
+import mediapipe as mp
+import time
+
+cap = cv2.VideoCapture(0)
+width, height = autopy.screen.size()
+
+hands = mp.solutions.hands.Hands(static_image_mode=False, max_num_hands=1,
+                                 min_tracking_confidence=0.5,
+                                 min_detection_confidence=0.5)
+
+mpdraw = mp.solutions.drawing_utils
+while True:
+    arr, img = cap.read()
+    result = hands.process(img)
+    if result.multi_hand_landmarks:
+        for id, lm in enumerate(result.multi_hand_landmarks[0].landmark):
+            h, w, _ = img.shape
+            cx, cy = int(lm.x * w), int(lm.y * h)
+            cv2.circle(img, (cx, cy), 3, (255, 0, 255))
+            if id == 8:
+                cv2.circle(img, (cx, cy), 3, (255, 0, 255), cv2.FILLED)
+                cx_8 = cx
+                cy_8 = cy
+            if id == 12:
+                cv2.circle(img, (cx, cy), 3, (255, 0, 255), cv2.FILLED)
+                cx_12 = cx
+                cy_12 = cy
+        if cy_8-10 > cy_12 and cx_8+10>cx_12:
+            autopy.mouse.click()
+            time.sleep(.1)
+            print("# left click")
+        else:
+            autopy.mouse.move(cx_8 * width / w, cy_8 * height / h)
+        mpdraw.draw_landmarks(img, result.multi_hand_landmarks[0], mp.solutions.hands.HAND_CONNECTIONS)
+    cv2.imshow("Mouse", img)
+    cv2.waitKey(1)
